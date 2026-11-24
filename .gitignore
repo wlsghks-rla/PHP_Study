@@ -1,0 +1,28 @@
+# OS / 에디터
+.DS_Store
+.idea/
+.vscode/
+
+# 환경설정·비밀값 (절대 커밋 금지)
+.env
+.env.*
+*.pem
+*.key
+config.local.php
+
+# 런타임 데이터: DB, 업로드된 파일, 로그
+public_html/storage/db/*
+public_html/storage/uploads/*
+public_html/image/*
+*.sqlite
+*.sqlite3
+*.log
+
+# 폴더 구조는 유지
+!public_html/storage/db/.gitkeep
+!public_html/storage/uploads/.gitkeep
+!public_html/image/.gitkeep
+
+# 의존성
+vendor/
+node_modules/

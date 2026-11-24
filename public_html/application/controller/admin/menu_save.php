@@ -1,0 +1,12 @@
+<?php include_once_path('application/core/admin');
+$id = (int) input('id', 0); $name = trim((string) input('name')); $type = (string) input('type'); $url = trim((string) input('url'));
+$errs = [];
+if ($name === '') $errs[] = '메뉴명을 입력하세요.'; elseif (mb_strlen($name) > 50) $errs[] = '메뉴명은 50자 이하로 입력하세요.';
+if (!in_array($type, ['BOARD', 'GALLERY', 'LINK'])) $errs[] = '메뉴 유형이 올바르지 않습니다.';
+if ($type === 'LINK' && $url === '') $errs[] = '링크형 메뉴는 주소를 입력해야 합니다.';
+if ($errs) back_with('errors', implode("\n", $errs));
+$row = ['name' => $name, 'type' => $type, 'url' => $type === 'LINK' ? $url : null, 'new_window' => (int) !empty($_POST['new_window']), 'sort' => (int) input('sort', 0), 'use_yn' => $id ? (int) !empty($_POST['use_yn']) : 1, 'updated_at' => now_str()];
+if ($id) q_update('menus', $row, 'id=? and deleted=0', [$id]); else $id = q_insert('menus', $row + ['created_at' => now_str()]);
+q_exec('delete from menu_permissions where menu_id=?', [$id]);
+foreach (array_unique(array_merge(array_intersect((array) ($_POST['levels'] ?? []), ['GUEST', 'USER']), ['SUPER'])) as $lv) q_insert('menu_permissions', ['menu_id' => $id, 'access_level' => $lv]);
+back_with('ok', '메뉴가 저장되었습니다.', '/admin/menus');

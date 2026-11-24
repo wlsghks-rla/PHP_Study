@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L,QSA]
+# 업로드 원본/DB 폴더는 웹에서 직접 접근 차단
+RedirectMatch 403 ^/(storage|application|view)/

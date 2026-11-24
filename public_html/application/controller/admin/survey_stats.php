@@ -1,0 +1,11 @@
+<?php include_once_path('application/core/admin');
+$s = q_one('select * from surveys where id=?', [(int) input('id')]) ?: fail(404, '설문조사를 찾을 수 없습니다.');
+include_once_path('application/model/survey_model');
+$participants = (int) q_val("select count(*) from survey_logs where survey_id=? and status='DONE'", [$s['id']]);
+$members = (int) q_val("select count(distinct user_id) from survey_logs where survey_id=? and status='DONE' and user_id is not null", [$s['id']]);
+$qs = q_all('select q.*, c.name category_name from questions q left join question_categories c on c.id=q.category_id where q.survey_id=? order by q.sort, q.id', [$s['id']]);
+$counts = [];
+foreach (q_all("select a.question_id, a.option_id, count(*) cnt from survey_answers a join survey_logs l on l.id=a.log_id where l.survey_id=? and l.status='DONE' group by a.question_id, a.option_id", [$s['id']]) as $r) $counts[$r['question_id']][(int) $r['option_id']] = (int) $r['cnt'];
+$byCat = [];
+foreach ($qs as $q) $byCat[$q['category_name'] ?? '(미분류)'] = ($byCat[$q['category_name'] ?? '(미분류)'] ?? 0) + array_sum($counts[$q['id']] ?? []);
+render('admin/survey_stats', ['title' => '설문 통계', 's' => $s, 'participants' => $participants, 'members' => $members, 'qs' => $qs, 'counts' => $counts, 'opts' => survey_options(array_column($qs, 'id')), 'byCat' => $byCat]);
